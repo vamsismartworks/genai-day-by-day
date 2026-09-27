@@ -7,7 +7,7 @@ Each day lives in its own folder and builds on the previous one.
 
 | Day | Topic | Folder | Status |
 |-----|-------|--------|--------|
-| 01 | Connect to Gemini with an API key and get a response | `day01-hello-bot/` | ⬜ |
+| 01 | Connect to Gemini with an API key and get a response | `day01-hello-gemini/` | ⬜ |
 
 ## Setup (one time)
 
@@ -26,7 +26,8 @@ cd ~/Learning_AI/genai-day-by-day
 python3 -m venv .venv
 ```
 
-This creates a `.venv/` folder. You only do this once. (`.venv/` is git-ignored.)
+This creates a `.venv/` folder. You only do this once.
+Don't have to create virtual environment everytime. (`.venv/` is git-ignored.)
 
 ### 3. Activate it
 
@@ -66,13 +67,13 @@ from the project root:
 ```bash
 cd ~/Learning_AI/genai-day-by-day
 source .venv/bin/activate
-python day01-hello-bot/hello_bot.py
+python day01-hello-gemini/hello_gemini.py
 ```
 
 Or skip activation and call the environment's Python directly:
 
 ```bash
-.venv/bin/python day01-hello-bot/hello_bot.py
+.venv/bin/python day01-hello-gemini/hello_gemini.py
 ```
 
 When you're done, leave the environment with:
@@ -91,5 +92,5 @@ pick the one in `./.venv`. The Run button and new terminals will then use it aut
 | `ModuleNotFoundError: No module named 'dotenv'` (or `google`) | Running with the system Python, not the venv | `source .venv/bin/activate`, then `pip install -r requirements.txt` |
 | `zsh: command not found: python` | The venv isn't active (macOS only has `python3`) | Activate the venv, or use `.venv/bin/python` |
 | `GEMINI_API_KEY is not set` | `.env` missing or still has the placeholder | Copy `.env.example` to `.env` and paste your key |
-| `404 NOT_FOUND ... model ... is no longer available` | Google retired that model | Replace that name in the `MODELS` list in the script with the model the error message suggests |
-| `503 UNAVAILABLE ... high demand` | Gemini is temporarily overloaded | The script retries automatically (switching to the lighter model too) until it gets a response; press `Ctrl+C` to stop |
+| `404 NOT_FOUND ... model ... is no longer available` | Google retired that model | Change `MODEL` in the script to the model the error message suggests |
+| `503 UNAVAILABLE ... high demand` | Gemini is temporarily overloaded | Wait a minute and run it again |
