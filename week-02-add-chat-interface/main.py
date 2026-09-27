@@ -2,13 +2,14 @@
 Week 02 — A web page where you type a prompt, pick a Gemini model, and see the response.
 
 Two parts work together:
-  web_bot.py         the server (FastAPI): serves the page and talks to Gemini
+  main.py            the server (FastAPI): serves the page and talks to Gemini
   static/index.html  the page: sends your prompt to the server and shows the reply
 
 The API key stays on the server, so it never reaches the browser.
 
-Run (from the project root):
-  python week-02/web_bot.py
+Run (from the week-02-add-chat-interface folder):
+  cd week-02-add-chat-interface
+  uvicorn main:app --reload --port 8000
 Then open http://127.0.0.1:8000 in your browser. Ctrl+C stops the server.
 """
 
@@ -115,5 +116,6 @@ def ask(request: AskRequest):
     }
 
 
+# Lets `python main.py` work too, without typing the uvicorn command
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

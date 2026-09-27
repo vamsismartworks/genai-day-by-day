@@ -8,9 +8,9 @@ Each day lives in its own folder and builds on the previous one.
 
 | Day | Topic | Folder | Status |
 |-----|-------|--------|--------|
-| 01 | Connect to Gemini and get a response (`hello_bot.py`) | `week-01/` | ✅ |
-| 01+ | Same bot, but pick any LLM: Gemini, Claude, OpenAI or Ollama (`hello_bots.py`) | `week-01/` | ✅ |
-| 02 | A web page to chat with Gemini, built with FastAPI (`web_bot.py`) | `week-02/` | ✅ |
+| 01 | Connect to Gemini and get a response (`hello_bot.py`) | `week-01-chat-with-LLM/` | ✅ |
+| 01+ | Same bot, but pick any LLM: Gemini, Claude, OpenAI or Ollama (`hello_bots.py`) | `week-01-chat-with-LLM/` | ✅ |
+| 02 | A web page to chat with Gemini, built with FastAPI (`main.py`) | `week-02-add-chat-interface/` | ✅ |
 
 ## Setup (one time)
 
@@ -80,34 +80,38 @@ from the project root:
 ```bash
 cd ~/Learning_AI/genai-day-by-day
 source .venv/bin/activate
-python week-01/hello_bot.py
+python week-01-chat-with-LLM/hello_bot.py
 ```
 
 `hello_bot.py` is the simple, Gemini-only version. To use a different LLM, run
 `hello_bots.py` and choose a provider and model with flags:
 
 ```bash
-python week-01/hello_bots.py --provider claude
-python week-01/hello_bots.py --provider openai --model gpt-5.4-nano
-python week-01/hello_bots.py --provider ollama --prompt "Tell me a joke"
-python week-01/hello_bots.py --list
+python week-01-chat-with-LLM/hello_bots.py --provider claude
+python week-01-chat-with-LLM/hello_bots.py --provider openai --model gpt-5.4-nano
+python week-01-chat-with-LLM/hello_bots.py --provider ollama --prompt "Tell me a joke"
+python week-01-chat-with-LLM/hello_bots.py --list
 ```
 
 ### Week 02: the web page
 
 ```bash
-python week-02/web_bot.py
+cd week-02-add-chat-interface
+uvicorn main:app --reload --port 8000
 ```
 
+`main:app` means "the `app` object in `main.py`", so run it from inside `week-02-add-chat-interface/`.
+`--reload` restarts the server whenever you save a change to the code.
+
 Then open http://127.0.0.1:8000 in your browser, type a prompt, pick a Gemini model and click
-**Ask Gemini**. Press `Ctrl+C` in the terminal to stop the server.
+**Ask Gemini**. Press `Ctrl+C` in the terminal to stop the server, then `cd ..` to go back to the project root.
 
 How it fits together:
 
-- `week-02/web_bot.py` is the **server**, built with [FastAPI](https://fastapi.tiangolo.com).
+- `week-02-add-chat-interface/main.py` is the **server**, built with [FastAPI](https://fastapi.tiangolo.com).
   It serves the page and is the only part that talks to Gemini, so your API key never
   reaches the browser.
-- `week-02/static/index.html` is the **page**. When you click the button, its JavaScript
+- `week-02-add-chat-interface/static/index.html` is the **page**. When you click the button, its JavaScript
   sends your prompt to the server (`POST /api/ask`) and shows the reply.
 - FastAPI also writes interactive API docs for you: open http://127.0.0.1:8000/docs to
   call `/api/ask` directly, without the page.
@@ -115,7 +119,7 @@ How it fits together:
 Or skip activation and call the environment's Python directly:
 
 ```bash
-.venv/bin/python week-01/hello_bot.py
+.venv/bin/python week-01-chat-with-LLM/hello_bot.py
 ```
 
 When you're done, leave the environment with:

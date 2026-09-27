@@ -1,7 +1,7 @@
 """
 Day 01 — Connect to Gemini with an API key and print its response.
 
-Run:  python week-01/hello_bot.py
+Run:  python week-01-chat-with-LLM/hello_bot.py
 """
 
 import os

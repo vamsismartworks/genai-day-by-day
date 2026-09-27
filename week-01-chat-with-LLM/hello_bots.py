@@ -8,11 +8,11 @@ Supported providers:
   ollama  Local model (Ollama)  no key; free, runs on your own machine
 
 Run (from the project root):
-  python week-01/hello_bots.py                                  # Gemini (the default)
-  python week-01/hello_bots.py --provider claude
-  python week-01/hello_bots.py --provider openai --model gpt-5.4-nano
-  python week-01/hello_bots.py --provider ollama --prompt "Tell me a joke"
-  python week-01/hello_bots.py --list                           # show providers and models
+  python week-01-chat-with-LLM/hello_bots.py                    # Gemini (the default)
+  python week-01-chat-with-LLM/hello_bots.py --provider claude
+  python week-01-chat-with-LLM/hello_bots.py --provider openai --model gpt-5.4-nano
+  python week-01-chat-with-LLM/hello_bots.py --provider ollama --prompt "Tell me a joke"
+  python week-01-chat-with-LLM/hello_bots.py --list             # show providers and models
 
 Set LLM_PROVIDER in .env to change the default provider.
 """

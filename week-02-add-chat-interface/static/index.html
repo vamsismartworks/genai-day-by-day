@@ -195,7 +195,7 @@
         answerMeta.textContent = `Answered by ${data.model} in ${data.seconds}s`;
         answer.hidden = false;
       } catch (err) {
-        showError("Couldn't reach the server. Is web_bot.py still running?");
+        showError("Couldn't reach the server. Is the server (main.py) still running?");
       } finally {
         setLoading(false);
       }
