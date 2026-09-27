@@ -10,6 +10,7 @@ Each day lives in its own folder and builds on the previous one.
 |-----|-------|--------|--------|
 | 01 | Connect to Gemini and get a response (`hello_bot.py`) | `week-01/` | ✅ |
 | 01+ | Same bot, but pick any LLM: Gemini, Claude, OpenAI or Ollama (`hello_bots.py`) | `week-01/` | ✅ |
+| 02 | A web page to chat with Gemini, built with FastAPI (`web_bot.py`) | `week-02/` | ✅ |
 
 ## Setup (one time)
 
@@ -92,6 +93,25 @@ python week-01/hello_bots.py --provider ollama --prompt "Tell me a joke"
 python week-01/hello_bots.py --list
 ```
 
+### Week 02: the web page
+
+```bash
+python week-02/web_bot.py
+```
+
+Then open http://127.0.0.1:8000 in your browser, type a prompt, pick a Gemini model and click
+**Ask Gemini**. Press `Ctrl+C` in the terminal to stop the server.
+
+How it fits together:
+
+- `week-02/web_bot.py` is the **server**, built with [FastAPI](https://fastapi.tiangolo.com).
+  It serves the page and is the only part that talks to Gemini, so your API key never
+  reaches the browser.
+- `week-02/static/index.html` is the **page**. When you click the button, its JavaScript
+  sends your prompt to the server (`POST /api/ask`) and shows the reply.
+- FastAPI also writes interactive API docs for you: open http://127.0.0.1:8000/docs to
+  call `/api/ask` directly, without the page.
+
 Or skip activation and call the environment's Python directly:
 
 ```bash
@@ -119,3 +139,4 @@ pick the one in `./.venv`. The Run button and new terminals will then use it aut
 | `Model '...' isn't downloaded yet` | Ollama doesn't have that model | `ollama pull <model>` |
 | `404 NOT_FOUND ... model ... is no longer available` | The provider retired that model | Pass a current one with `--model` (`hello_bots.py`), or update the model list in the script |
 | `503 UNAVAILABLE ... high demand` | The provider is temporarily overloaded | The script retries by itself; press Ctrl+C to stop |
+| `address already in use` (port 8000) | The web page server is already running in another terminal | Stop it with `Ctrl+C` there, or close that terminal |

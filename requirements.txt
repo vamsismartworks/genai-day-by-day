@@ -4,3 +4,7 @@ python-dotenv
 google-genai   # Gemini
 anthropic      # Claude
 openai         # OpenAI, and also Ollama (local models)
+
+# Web server for the week 02 web page
+fastapi
+uvicorn

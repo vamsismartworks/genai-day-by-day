@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini Web Bot</title>
+
+  <!-- marked turns Gemini's Markdown into HTML; DOMPurify strips anything unsafe from it -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2330;
+      --muted: #6b7280;
+      --border: #dde1ea;
+      --accent: #3b6cf6;
+      --accent-text: #ffffff;
+      --error-bg: #fdecec;
+      --error-text: #a3212a;
+      --code-bg: #f0f2f7;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14161c;
+        --card: #1e2129;
+        --text: #e6e8ee;
+        --muted: #9aa1b1;
+        --border: #333845;
+        --accent: #6d93ff;
+        --accent-text: #0e1117;
+        --error-bg: #3a1d20;
+        --error-text: #ffb3b8;
+        --code-bg: #272b35;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 40px 16px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    main { max-width: 760px; margin: 0 auto; }
+
+    h1 { margin: 0 0 4px; font-size: 1.8rem; }
+    .subtitle { margin: 0 0 24px; color: var(--muted); }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    label { display: block; font-weight: 600; margin-bottom: 6px; }
+
+    select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font: inherit;
+      margin-bottom: 16px;
+    }
+    textarea { min-height: 140px; resize: vertical; }
+    select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .hint { color: var(--muted); font-size: 0.85rem; }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: var(--accent-text);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.6; cursor: wait; }
+
+    .error {
+      background: var(--error-bg);
+      color: var(--error-text);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+    }
+
+    #answer h2 { margin: 0 0 8px; font-size: 1.1rem; }
+    #answer .meta { color: var(--muted); font-size: 0.85rem; margin: 12px 0 0; }
+    #answer-text > :first-child { margin-top: 0; }
+    #answer-text pre, #answer-text code { background: var(--code-bg); border-radius: 6px; }
+    #answer-text pre { padding: 12px; overflow-x: auto; }
+    #answer-text code { padding: 1px 4px; }
+    #answer-text pre code { padding: 0; }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: -2px;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>✨ Gemini Web Bot</h1>
+    <p class="subtitle">Type a prompt, pick a model, and see what Gemini says.</p>
+
+    <form id="ask-form" class="card">
+      <label for="model">Model</label>
+      <select id="model"></select>
+
+      <label for="prompt">Your prompt</label>
+      <textarea id="prompt" placeholder="e.g. Explain what a large language model is, in 3 sentences."></textarea>
+
+      <div class="actions">
+        <button id="ask-button" type="submit">Ask Gemini</button>
+        <span class="hint">or press Ctrl/⌘ + Enter</span>
+      </div>
+    </form>
+
+    <div id="error" class="error" hidden></div>
+
+    <section id="answer" class="card" hidden>
+      <h2>Response</h2>
+      <div id="answer-text"></div>
+      <p id="answer-meta" class="meta"></p>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("ask-form");
+    const modelSelect = document.getElementById("model");
+    const promptBox = document.getElementById("prompt");
+    const button = document.getElementById("ask-button");
+    const errorBox = document.getElementById("error");
+    const answer = document.getElementById("answer");
+    const answerText = document.getElementById("answer-text");
+    const answerMeta = document.getElementById("answer-meta");
+
+    // 1. When the page opens, ask the server which models to offer
+    async function loadModels() {
+      const res = await fetch("/api/models");
+      const models = await res.json();
+      for (const m of models) {
+        modelSelect.add(new Option(m.label, m.id));
+      }
+    }
+
+    // 2. When the form is submitted, send the prompt to the server and show the reply
+    async function ask(event) {
+      event.preventDefault();  // stop the browser from reloading the page
+      const prompt = promptBox.value.trim();
+      if (!prompt) {
+        showError("Please type a prompt first.");
+        return;
+      }
+
+      setLoading(true);
+      errorBox.hidden = true;
+      try {
+        const res = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: prompt, model: modelSelect.value }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showError(data.detail);  // the message from the server's HTTPException
+          return;
+        }
+        answerText.innerHTML = DOMPurify.sanitize(marked.parse(data.response));
+        answerMeta.textContent = `Answered by ${data.model} in ${data.seconds}s`;
+        answer.hidden = false;
+      } catch (err) {
+        showError("Couldn't reach the server. Is web_bot.py still running?");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function setLoading(isLoading) {
+      button.disabled = isLoading;
+      button.innerHTML = isLoading ? '<span class="spinner"></span>Thinking...' : "Ask Gemini";
+    }
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.hidden = false;
+      answer.hidden = true;
+    }
+
+    form.addEventListener("submit", ask);
+    promptBox.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) form.requestSubmit();
+    });
+    loadModels();
+  </script>
+</body>
+</html>
