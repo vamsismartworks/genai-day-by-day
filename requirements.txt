@@ -1,2 +1,6 @@
-google-genai
 python-dotenv
+
+# LLM provider SDKs — you only need the one(s) you plan to use
+google-genai   # Gemini
+anthropic      # Claude
+openai         # OpenAI, and also Ollama (local models)

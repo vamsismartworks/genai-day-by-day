@@ -1,13 +1,15 @@
 # GenAI Day by Day
 
-A small step forward in Generative AI each day, using Google's Gemini models.
+A small step forward in Generative AI each day. Use the LLM you like: Google Gemini,
+Anthropic Claude, OpenAI GPT, or a free local model through Ollama.
 Each day lives in its own folder and builds on the previous one.
 
 ## Progress
 
 | Day | Topic | Folder | Status |
 |-----|-------|--------|--------|
-| 01 | Connect to Gemini with an API key and get a response | `day01-hello-gemini/` | ⬜ |
+| 01 | Connect to Gemini and get a response (`hello_bot.py`) | `week-01/` | ✅ |
+| 01+ | Same bot, but pick any LLM: Gemini, Claude, OpenAI or Ollama (`hello_bots.py`) | `week-01/` | ✅ |
 
 ## Setup (one time)
 
@@ -47,7 +49,8 @@ which python        # should end in genai-day-by-day/.venv/bin/python
 pip install -r requirements.txt
 ```
 
-This installs `google-genai` and `python-dotenv` into `.venv/` only.
+This installs `python-dotenv` and the SDKs for every provider (`google-genai`, `anthropic`,
+`openai`) into `.venv/` only. Each provider's SDK is loaded only when you use it.
 
 ### 5. Add your API key
 
@@ -55,8 +58,17 @@ This installs `google-genai` and `python-dotenv` into `.venv/` only.
 cp .env.example .env
 ```
 
-Open `.env` and replace `your-api-key-here` with your key.
-Get a free API key at https://aistudio.google.com/apikey.
+Open `.env` and replace `your-api-key-here` with the key for **at least one** provider:
+
+| Provider | `--provider` | Key in `.env` | Get a key |
+|----------|--------------|---------------|-----------|
+| Google Gemini (free tier) | `gemini` | `GEMINI_API_KEY` | https://aistudio.google.com/apikey |
+| Anthropic Claude | `claude` | `ANTHROPIC_API_KEY` | https://console.anthropic.com/settings/keys |
+| OpenAI GPT | `openai` | `OPENAI_API_KEY` | https://platform.openai.com/api-keys |
+| Ollama (local, free) | `ollama` | none | Install from https://ollama.com, then `ollama pull llama3.2:3b` |
+
+`hello_bot.py` only needs `GEMINI_API_KEY`. For `hello_bots.py`, set `LLM_PROVIDER` in `.env` to choose
+the provider used when you don't pass `--provider`.
 `.env` is git-ignored, so your key stays out of version control.
 
 ## Run a day
@@ -67,13 +79,23 @@ from the project root:
 ```bash
 cd ~/Learning_AI/genai-day-by-day
 source .venv/bin/activate
-python day01-hello-gemini/hello_gemini.py
+python week-01/hello_bot.py
+```
+
+`hello_bot.py` is the simple, Gemini-only version. To use a different LLM, run
+`hello_bots.py` and choose a provider and model with flags:
+
+```bash
+python week-01/hello_bots.py --provider claude
+python week-01/hello_bots.py --provider openai --model gpt-5.4-nano
+python week-01/hello_bots.py --provider ollama --prompt "Tell me a joke"
+python week-01/hello_bots.py --list
 ```
 
 Or skip activation and call the environment's Python directly:
 
 ```bash
-.venv/bin/python day01-hello-gemini/hello_gemini.py
+.venv/bin/python week-01/hello_bot.py
 ```
 
 When you're done, leave the environment with:
@@ -91,6 +113,9 @@ pick the one in `./.venv`. The Run button and new terminals will then use it aut
 |-------|-------|-----|
 | `ModuleNotFoundError: No module named 'dotenv'` (or `google`) | Running with the system Python, not the venv | `source .venv/bin/activate`, then `pip install -r requirements.txt` |
 | `zsh: command not found: python` | The venv isn't active (macOS only has `python3`) | Activate the venv, or use `.venv/bin/python` |
-| `GEMINI_API_KEY is not set` | `.env` missing or still has the placeholder | Copy `.env.example` to `.env` and paste your key |
-| `404 NOT_FOUND ... model ... is no longer available` | Google retired that model | Change `MODEL` in the script to the model the error message suggests |
-| `503 UNAVAILABLE ... high demand` | Gemini is temporarily overloaded | Wait a minute and run it again |
+| `GEMINI_API_KEY is not set` (or `ANTHROPIC_…`/`OPENAI_…`) | `.env` missing or still has the placeholder | Copy `.env.example` to `.env` and paste your key |
+| `The ... package isn't installed` | That provider's SDK is missing | `pip install -r requirements.txt` |
+| `Can't reach Ollama at localhost:11434` | Ollama isn't running | Start the Ollama app, or run `ollama serve` |
+| `Model '...' isn't downloaded yet` | Ollama doesn't have that model | `ollama pull <model>` |
+| `404 NOT_FOUND ... model ... is no longer available` | The provider retired that model | Pass a current one with `--model` (`hello_bots.py`), or update the model list in the script |
+| `503 UNAVAILABLE ... high demand` | The provider is temporarily overloaded | The script retries by itself; press Ctrl+C to stop |
